@@ -229,9 +229,12 @@
 			$query = $db->prepare($sql);
 			$query->bindValue(":parti", $parti, PDO::PARAM_STR);
 			$query->execute();
-			$data = false;
+			$data = [];
 			while($row = $query->fetch(PDO::FETCH_ASSOC)){
 				$data = $row;
+			}
+			if(empty($data)){
+				return '';
 			}
 			return $data['prenom'].' '.$data['nom'];
 		}
@@ -333,6 +336,59 @@
 				return false;
 			}
 		}
+
+		public function generatePasswordForElector(){
+			
+			$matricules = $this->listMatricule();
+			try{
+				$inc = 0;
+				foreach($matricules as $matricule){
+					$password = $this->randomPassword();
+					// $password =+ $inc;
+
+					$db = $this->db_con;
+					$sql = " UPDATE `electeur` 
+								SET `password` = :password 
+								WHERE `matricule`= :matricule
+						";
+					$query = $db->prepare($sql);
+					$query->bindValue(":password", $password, PDO::PARAM_STR);
+					$query->bindValue(":matricule", $matricule['matricule'], PDO::PARAM_INT);
+					$query->execute();
+					$inc++;
+				}
+				return $inc;
+			}catch(Exception $e){
+				return 0;
+			}
+		}
+
+		public function listMatricule(){
+			$db = $this->db_con;
+			$sql = "SELECT 	matricule
+					FROM 	electeur
+				";
+			$query = $db->prepare($sql);
+			$query->execute();
+			$data = [];
+			while($row = $query->fetch(PDO::FETCH_ASSOC)){
+				$data[] = $row;
+			}
+			return $data;
+			
+		}
+
+		private function randomPassword() {
+			$alphabet = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ123456789';
+			$pass = array(); //remember to declare $pass as an array
+			$alphaLength = strlen($alphabet) - 1; //put the length -1 in cache
+			for ($i = 0; $i < 8; $i++) {
+				$n = rand(0, $alphaLength);
+				$pass[] = $alphabet[$n];
+			}
+			return implode($pass); //turn the array into a string
+		}
+		
 
     }
     
