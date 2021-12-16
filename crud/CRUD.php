@@ -337,9 +337,18 @@
 			}
 		}
 
-		public function generatePasswordForElector(){
+		public function generatePasswordForElector($alter = 0){
+
+			if($alter){
+				$matricules = $this->listAlterMatricule();
+			}else{
+				$matricules = $this->listMatricule();
+			}
 			
-			$matricules = $this->listMatricule();
+			if(count($matricules) == 0){
+				return 'no update available';
+			}
+
 			try{
 				$inc = 0;
 				foreach($matricules as $matricule){
@@ -378,6 +387,21 @@
 			
 		}
 
+		public function listAlterMatricule(){ 
+			$db = $this->db_con;
+			$sql = "SELECT 	matricule
+					FROM 	atlerElecteur
+				";
+			$query = $db->prepare($sql);
+			$query->execute();
+			$data = [];
+			while($row = $query->fetch(PDO::FETCH_ASSOC)){
+				$data[] = $row;
+			}
+			return $data;
+			
+		}
+
 		private function randomPassword() {
 			$alphabet = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ123456789';
 			$pass = array(); //remember to declare $pass as an array
@@ -387,6 +411,20 @@
 				$pass[] = $alphabet[$n];
 			}
 			return implode($pass); //turn the array into a string
+		}
+		
+		public function generateElectorList(){
+			$db = $this->db_con;
+			$sql = "SELECT 	*
+					FROM 	electeur
+				";
+			$query = $db->prepare($sql);
+			$query->execute();
+			$data = [];
+			while($row = $query->fetch(PDO::FETCH_ASSOC)){
+				$data[] = $row;
+			}
+			return $data;
 		}
 		
 
